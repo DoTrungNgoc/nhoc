@@ -1,0 +1,57 @@
+	@Bean
+	public DataSource dataSource() {
+		ComboPooledDataSource dataSource = new ComboPooledDataSource();
+		try {
+			dataSource.setDriverClass("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		dataSource.setJdbcUrl(env.getProperty("jdbc.url"));
+		dataSource.setUser(env.getProperty("jdbc.user"));
+		dataSource.setPassword(env.getProperty("jdbc.password"));
+		
+		dataSource.setInitialPoolSize(5);
+		dataSource.setMinPoolSize(5);
+		dataSource.setMaxPoolSize(20);
+		dataSource.setMaxIdleTime(3000);
+		
+		return dataSource;
+	}
+	
+	private Properties hibernateProperties() {
+		Properties prop = new Properties();
+		prop.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLServer2012Dialect");
+		prop.setProperty("hibernate.show_sql", "true");
+		return prop;
+	}
+	
+	@Bean
+	public LocalSessionFactoryBean sessionFactoryBean() {
+		LocalSessionFactoryBean factoryBean = new LocalSessionFactoryBean();
+		factoryBean.setDataSource(dataSource());
+		factoryBean.setHibernateProperties(hibernateProperties());
+		factoryBean.setPackagesToScan("spring.entity");
+		
+		return factoryBean;
+	}
+	
+	@Bean
+	@Autowired
+	public HibernateTransactionManager transactionManager(SessionFactory sessionFactory) {
+		HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+		transactionManager.setSessionFactory(sessionFactory);
+		return transactionManager;
+	}
+
+	@Bean
+	public ViewResolver viewResolver() {
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		viewResolver.setPrefix("/WEB-INF/view/");
+		viewResolver.setSuffix(".jsp");
+		
+		return viewResolver;
+	}
+
+
+	jdbc.url=jdbc:sqlserver://localhost:1433;databaseName=OnCK2
